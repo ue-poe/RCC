@@ -358,16 +358,7 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:5px;"><span>0</span><span>${totalPlanned} planned</span></div>
     </div>
   </div>
-  <div class="kpi">
-      <div class="kpi-lbl">Fastest pour cycle</div>
-      <div class="kpi-val" style="color:#27500A">${minCycle ? minCycle.days+' days' : '—'}</div>
-      <div class="kpi-sub">${minCycle ? PANEL_LABELS[minCycle.panel]+', floor '+minCycle.floor : ''}</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Slowest pour cycle</div>
-      <div class="kpi-val" style="color:#854F0B">${maxCycle ? maxCycle.days+' days' : '—'}</div>
-      <div class="kpi-sub">${maxCycle ? PANEL_LABELS[maxCycle.panel]+', floor '+maxCycle.floor : ''}</div>
-    </div>
+
   <div class="kpi-row">
     <div class="kpi">
       <div class="kpi-lbl">Total pours completed</div>
@@ -436,6 +427,21 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     </div>`).join('')}
   </div>
 
+  <div class="sec-lbl">Pour cycle time heatmap — days between consecutive floor pours</div>
+  <div class="chart-card" style="overflow-x:auto;">
+    <div style="display:flex;gap:20px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+      <div style="font-size:13px;font-weight:500;color:var(--text)">Cycle time per floor (days)</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#EAF3DE"></span>Fast (&lt;14d)
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#97C459;margin-left:8px"></span>14–18d
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#EF9F27;margin-left:8px"></span>19–25d
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#E24B4A;margin-left:8px"></span>Slow (&gt;25d)
+        <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#f0f0ec;border:0.5px solid #ccc;margin-left:8px"></span>No data
+      </div>
+    </div>
+    <div id="heatmap-container"></div>
+  </div>
+
   <div class="chart-card">
     <div class="chart-title">Monthly pours achieved — count by block</div>
     <div class="leg-row">
@@ -474,6 +480,58 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     },
     options: { ...baseOpts, scales: { x: xOpts, y: { ...yOpts, ticks:{...yOpts.ticks, stepSize:1, callback:v=>v+' nos'} } } }
   });
+
+  // Heatmap — cycle times per panel per floor
+  const cycleMatrix = {};
+  PANEL_KEYS.forEach(k => {
+    const dates = pourDates[k].map((d,i) => ({d,i})).filter(x => x.d && x.d <= today).sort((a,b) => a.d - b.d);
+    cycleMatrix[k] = {};
+    for (let j = 1; j < dates.length; j++) {
+      const floorIdx = dates[j].i;
+      const diff = Math.round((dates[j].d - dates[j-1].d) / (1000*60*60*24)) + 1;
+      cycleMatrix[k][floorIdx] = diff;
+    }
+  });
+
+  function cycleColor(days) {
+    if (days == null) return { bg:'#f0f0ec', text:'#aaa', border:'#ddd' };
+    if (days < 14)  return { bg:'#EAF3DE', text:'#27500A', border:'#C0DD97' };
+    if (days <= 18) return { bg:'#97C459', text:'#173404', border:'#639922' };
+    if (days <= 25) return { bg:'#EF9F27', text:'#412402', border:'#BA7517' };
+    return { bg:'#F09595', text:'#501313', border:'#E24B4A' };
+  }
+
+  const maxFloors = Math.max(...PANEL_KEYS.map(k => pourDates[k].filter(d => d && d <= today).length));
+  const floorNums = Array.from({length: maxFloors}, (_,i) => i+1);
+
+  const heatmapShortLabels = {'A-P1':'A-P1','A-P2':'A-P2','B-P1':'B-P1','B-P2':'B-P2','C-P1':'C-P1','C-P2':'C-P2'};
+
+  let hmHtml = '<table style="border-collapse:collapse;width:100%;min-width:420px;">';
+  hmHtml += '<thead><tr><th style="text-align:left;font-size:11px;color:var(--text2);padding:4px 8px;font-weight:500;width:60px">Pour</th>';
+  floorNums.forEach(f => {
+    hmHtml += `<th style="text-align:center;font-size:10px;color:var(--text3);padding:4px 3px;font-weight:400;min-width:36px">${ordinal(f)}</th>`;
+  });
+  hmHtml += '</tr></thead><tbody>';
+
+  PANEL_KEYS.forEach(k => {
+    hmHtml += `<tr><td style="font-size:11px;font-weight:500;color:var(--text2);padding:3px 8px;white-space:nowrap">${heatmapShortLabels[k]}</td>`;
+    floorNums.forEach(f => {
+      const floorIdx = f - 1;
+      const hasDate = pourDates[k][floorIdx] && pourDates[k][floorIdx] <= today;
+      const days = cycleMatrix[k][floorIdx] != null ? cycleMatrix[k][floorIdx] : null;
+      const isFirstFloor = hasDate && days == null;
+      const c = isFirstFloor ? { bg:'#f0f0ec', text:'#aaa', border:'#ddd' } : cycleColor(days);
+      const label = isFirstFloor ? '1st' : (days != null ? days+'d' : '');
+      hmHtml += `<td style="padding:3px;text-align:center">
+        <div title="${days != null ? days+' days' : (isFirstFloor ? 'First pour — no cycle time' : 'No pour')}" style="background:${c.bg};border:0.5px solid ${c.border};border-radius:4px;padding:5px 2px;font-size:10px;font-weight:500;color:${c.text};min-width:32px;line-height:1.3">${label}</div>
+      </td>`;
+    });
+    hmHtml += '</tr>';
+  });
+
+  hmHtml += '</tbody></table>';
+  hmHtml += '<div style="font-size:11px;color:var(--text3);margin-top:10px">Cycle time = days from previous floor pour to this floor pour + 1. First floor has no cycle time.</div>';
+  document.getElementById('heatmap-container').innerHTML = hmHtml;
 
   new Chart(document.getElementById('cConc'), {
     type: 'bar',
