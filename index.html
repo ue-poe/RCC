@@ -238,7 +238,7 @@ function processData(rows) {
 PANEL_KEYS.forEach(k => {
   const dates = pourDates[k].map((d,i) => ({d, i})).filter(x => x.d && x.d <= today).map(x => x.d).sort((a,b) => a-b);
   for (let i = 1; i < dates.length; i++) {
-    const diff = Math.round((dates[i] - dates[i-1]) / (1000*60*60*24)) + 1;
+    const diff = Math.round((dates[i] - dates[i-1]) / (1000*60*60*24)) ;
     cycleTimes.push({ panel: k, days: diff, floor: i+1 });
   }
 });
