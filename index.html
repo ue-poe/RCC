@@ -234,6 +234,16 @@ function processData(rows) {
   });
 
   const totalPours = PANEL_KEYS.reduce((s, k) => s + completedCount[k], 0);
+  const cycleTimes = [];
+PANEL_KEYS.forEach(k => {
+  const dates = pourDates[k].map((d,i) => ({d, i})).filter(x => x.d && x.d <= today).map(x => x.d).sort((a,b) => a-b);
+  for (let i = 1; i < dates.length; i++) {
+    const diff = Math.round((dates[i] - dates[i-1]) / (1000*60*60*24)) + 1;
+    cycleTimes.push({ panel: k, days: diff, floor: i+1 });
+  }
+});
+const minCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days <= b.days ? a : b) : null;
+const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days ? a : b) : null;
   const totalPlanned = 162;
   const pctAchieved = Math.round((totalPours / totalPlanned) * 100);
   
@@ -348,6 +358,16 @@ function processData(rows) {
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:5px;"><span>0</span><span>${totalPlanned} planned</span></div>
     </div>
   </div>
+  <div class="kpi">
+      <div class="kpi-lbl">Fastest pour cycle</div>
+      <div class="kpi-val" style="color:#27500A">${minCycle ? minCycle.days+' days' : '—'}</div>
+      <div class="kpi-sub">${minCycle ? PANEL_LABELS[minCycle.panel]+', floor '+minCycle.floor : ''}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Slowest pour cycle</div>
+      <div class="kpi-val" style="color:#854F0B">${maxCycle ? maxCycle.days+' days' : '—'}</div>
+      <div class="kpi-sub">${maxCycle ? PANEL_LABELS[maxCycle.panel]+', floor '+maxCycle.floor : ''}</div>
+    </div>
   <div class="kpi-row">
     <div class="kpi">
       <div class="kpi-lbl">Total pours completed</div>
