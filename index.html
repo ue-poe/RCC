@@ -17,79 +17,86 @@
     --border2: rgba(0,0,0,0.2);
     --green-bg: #EAF3DE; --green-text: #27500A;
     --blue-bg: #E6F1FB;  --blue-text: #0C447C;
-    --radius-md: 8px; --radius-lg: 12px;
+    --radius-md: 10px; --radius-lg: 14px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); font-size: 14px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); font-size: 16px; }
 
   #loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 16px; }
-  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: #639922; border-radius: 50%; animation: spin .8s linear infinite; }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #639922; border-radius: 50%; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  #loading p { font-size: 13px; color: var(--text2); }
+  #loading p { font-size: 15px; color: var(--text2); }
 
   #error-msg { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 12px; padding: 24px; text-align: center; }
-  #error-msg h2 { font-size: 16px; font-weight: 500; color: var(--text); }
-  #error-msg p { font-size: 13px; color: var(--text2); max-width: 420px; line-height: 1.6; }
+  #error-msg h2 { font-size: 18px; font-weight: 500; color: var(--text); }
+  #error-msg p { font-size: 15px; color: var(--text2); max-width: 480px; line-height: 1.6; }
 
-  #dashboard { display: none; max-width: 100%; margin: 0; padding: 24px 32px 40px; }
+  #dashboard { display: none; width: 100%; padding: 32px 48px 56px; }
 
-  .hdr { margin-bottom: 20px; border-bottom: 0.5px solid var(--border); padding-bottom: 14px; }
-  .hdr-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
-  .hdr h1 { font-size: 20px; font-weight: 500; color: var(--text); }
-  .hdr-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
-  .hdr-tag { font-size: 11px; padding: 3px 12px; border-radius: 20px; background: var(--bg2); color: var(--text2); white-space: nowrap; border: 0.5px solid var(--border); }
-  .updated { font-size: 11px; color: var(--text3); margin-top: 6px; }
+  .hdr { margin-bottom: 28px; border-bottom: 0.5px solid var(--border); padding-bottom: 20px; }
+  .hdr-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .hdr h1 { font-size: 26px; font-weight: 500; color: var(--text); }
+  .hdr-sub { font-size: 15px; color: var(--text2); margin-top: 5px; }
+  .hdr-tag { font-size: 13px; padding: 5px 16px; border-radius: 20px; background: var(--bg2); color: var(--text2); white-space: nowrap; border: 0.5px solid var(--border); }
+  .updated { font-size: 13px; color: var(--text3); margin-top: 6px; }
 
-  .kpi-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
-  .kpi { background: var(--bg2); border-radius: var(--radius-md); padding: 14px 16px; }
-  .kpi-lbl { font-size: 12px; color: var(--text2); margin-bottom: 5px; }
-  .kpi-val { font-size: 22px; font-weight: 500; color: var(--text); }
-  .kpi-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-bottom: 28px; }
+  .kpi { background: var(--bg2); border-radius: var(--radius-md); padding: 20px 22px; }
+  .kpi-lbl { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+  .kpi-val { font-size: 28px; font-weight: 500; color: var(--text); }
+  .kpi-sub { font-size: 13px; color: var(--text3); margin-top: 5px; }
 
-  .sec-lbl { font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 10px; }
+  .sec-lbl { font-size: 12px; font-weight: 500; color: var(--text2); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
 
-  .block-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
-  .bcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
-  .bcard-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .bcard-title { font-size: 13px; font-weight: 500; }
-  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+  .block-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin-bottom: 28px; }
+  .bcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px 22px; }
+  .bcard-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .bcard-title { font-size: 16px; font-weight: 500; }
+  .badge { font-size: 13px; padding: 4px 12px; border-radius: 20px; }
   .badge-green { background: var(--green-bg); color: var(--green-text); }
   .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
-  .prog-bg { background: var(--border); border-radius: 4px; height: 6px; margin-bottom: 5px; }
-  .prog-fill { height: 6px; border-radius: 4px; }
-  .prog-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); }
-  .divider { border: none; border-top: 0.5px solid var(--border); margin: 10px 0; }
-  .stat-row { display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px; }
+  .prog-bg { background: var(--border); border-radius: 4px; height: 8px; margin-bottom: 7px; }
+  .prog-fill { height: 8px; border-radius: 4px; }
+  .prog-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); }
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 12px 0; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 14px; margin-top: 7px; }
   .stat-key { color: var(--text2); }
   .stat-val { font-weight: 500; color: var(--text); }
 
-  .latest-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
-  .lcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 13px 15px; }
-  .lcard-panel { font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 500; }
-  .lcard-floor { font-size: 15px; font-weight: 500; }
-  .lcard-date { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .lcard-qty { font-size: 13px; font-weight: 500; margin-top: 8px; }
-  .lcard-qty span { font-size: 11px; font-weight: 400; color: var(--text2); }
-  .lcard-dur { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .latest-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin-bottom: 28px; }
+  .lcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; }
+  .lcard-panel { font-size: 12px; color: var(--text3); margin-bottom: 6px; font-weight: 500; }
+  .lcard-floor { font-size: 18px; font-weight: 500; }
+  .lcard-date { font-size: 14px; color: var(--text2); margin-top: 3px; }
+  .lcard-qty { font-size: 15px; font-weight: 500; margin-top: 10px; }
+  .lcard-qty span { font-size: 13px; font-weight: 400; color: var(--text2); }
+  .lcard-dur { font-size: 13px; color: var(--text3); margin-top: 3px; }
 
-  .recent-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
-  .rcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; }
-  .rcard-rank { font-size: 11px; color: var(--text3); margin-bottom: 3px; }
-  .rcard-floor { font-size: 14px; font-weight: 500; }
-  .rcard-block { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
-  .rcard-date { font-size: 12px; }
-  .rcard-qty { font-size: 12px; color: var(--text2); margin-top: 1px; }
-  .pill-new { display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 10px; font-weight: 500; background: var(--blue-bg); color: var(--blue-text); margin-left: 5px; vertical-align: middle; }
+  .recent-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin-bottom: 28px; }
+  .rcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; }
+  .rcard-rank { font-size: 12px; color: var(--text3); margin-bottom: 5px; }
+  .rcard-floor { font-size: 17px; font-weight: 500; }
+  .rcard-block { font-size: 14px; color: var(--text2); margin-bottom: 8px; }
+  .rcard-date { font-size: 14px; }
+  .rcard-qty { font-size: 14px; color: var(--text2); margin-top: 2px; }
+  .pill-new { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 12px; font-weight: 500; background: var(--blue-bg); color: var(--blue-text); margin-left: 6px; vertical-align: middle; }
 
-  .chart-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px; }
-  .chart-title { font-size: 13px; font-weight: 500; margin-bottom: 12px; }
-  .leg-row { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--text2); margin-bottom: 10px; }
-  .leg { display: flex; align-items: center; gap: 5px; }
-  .leg-sq { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .chart-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; }
+  .chart-title { font-size: 16px; font-weight: 500; margin-bottom: 16px; }
+  .leg-row { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px; color: var(--text2); margin-bottom: 14px; }
+  .leg { display: flex; align-items: center; gap: 7px; }
+  .leg-sq { width: 13px; height: 13px; border-radius: 3px; display: inline-block; }
 
-  @media (max-width: 700px) {
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+  @media (max-width: 1024px) {
+    #dashboard { padding: 24px 28px 48px; }
     .kpi-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .block-grid, .latest-grid, .recent-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    #dashboard { padding: 16px 16px 32px; }
+    .kpi-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .block-grid, .latest-grid, .recent-grid, .charts-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -347,15 +354,15 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
 
 <div style="background:var(--bg2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border:0.5px solid var(--border);">
     <div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Overall pour progress</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:6px;">Overall pour progress</div>
       <div style="font-size:32px;font-weight:500;color:${pctAchieved>=50?'#27500A':'#854F0B'}">${pctAchieved}%</div>
-      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${totalPours} of ${totalPlanned} pours completed</div>
+      <div style="font-size:14px;color:var(--text3);margin-top:5px;">${totalPours} of ${totalPlanned} pours completed</div>
     </div>
     <div style="flex:1;min-width:200px;max-width:500px;">
       <div style="background:var(--border);border-radius:6px;height:10px;">
         <div style="width:${pctAchieved}%;height:10px;border-radius:6px;background:${pctAchieved>=50?'#639922':'#185FA5'};"></div>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:5px;"><span>0</span><span>${totalPlanned} planned</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text3);margin-top:6px;"><span>0</span><span>${totalPlanned} planned</span></div>
     </div>
   </div>
 
@@ -430,8 +437,8 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
   <div class="sec-lbl">Pour cycle time heatmap — days between consecutive floor pours</div>
   <div class="chart-card" style="overflow-x:auto;">
     <div style="display:flex;gap:20px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-      <div style="font-size:13px;font-weight:500;color:var(--text)">Cycle time per floor (days)</div>
-      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)">
+      <div style="font-size:15px;font-weight:500;color:var(--text)">Cycle time per floor (days)</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)">
         <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#EAF3DE"></span>Fast (&lt;14d)
         <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#97C459;margin-left:8px"></span>14–18d
         <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:#EF9F27;margin-left:8px"></span>19–25d
@@ -442,30 +449,31 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     <div id="heatmap-container"></div>
   </div>
 
-  <div class="chart-card">
-    <div class="chart-title">Monthly pours achieved — count by block</div>
-    <div class="leg-row">
-      <span class="leg"><span class="leg-sq" style="background:#85B7EB"></span>Block A</span>
-      <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
-      <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
+  <div class="charts-row">
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-title">Monthly pours achieved — count by block</div>
+      <div class="leg-row">
+        <span class="leg"><span class="leg-sq" style="background:#85B7EB"></span>Block A</span>
+        <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
+        <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
+      </div>
+      <div style="position:relative;width:100%;height:300px"><canvas id="cPours"></canvas></div>
     </div>
-    <div style="position:relative;width:100%;height:220px"><canvas id="cPours"></canvas></div>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title">Monthly concrete consumption (m³) — by block</div>
-    <div class="leg-row">
-      <span class="leg"><span class="leg-sq" style="background:#85B7EB"></span>Block A</span>
-      <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
-      <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
+    <div class="chart-card" style="margin-bottom:0">
+      <div class="chart-title">Monthly concrete consumption (m³) — by block</div>
+      <div class="leg-row">
+        <span class="leg"><span class="leg-sq" style="background:#85B7EB"></span>Block A</span>
+        <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
+        <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
+      </div>
+      <div style="position:relative;width:100%;height:300px"><canvas id="cConc"></canvas></div>
     </div>
-    <div style="position:relative;width:100%;height:220px"><canvas id="cConc"></canvas></div>
   </div>
   `;
 
   // Charts
-  const xOpts = { ticks:{font:{size:11},color:'#888780'}, grid:{display:false} };
-  const yOpts = { ticks:{font:{size:11},color:'#888780'}, grid:{color:'rgba(136,135,128,0.15)'} };
+  const xOpts = { ticks:{font:{size:13},color:'#888780'}, grid:{display:false} };
+  const yOpts = { ticks:{font:{size:13},color:'#888780'}, grid:{color:'rgba(136,135,128,0.15)'} };
   const baseOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} };
 
   new Chart(document.getElementById('cPours'), {
@@ -518,9 +526,9 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
   let hmHtml = '<table style="border-collapse:collapse;width:100%;">';
   // Header row — pour names as columns
   hmHtml += '<thead><tr>';
-  hmHtml += '<th style="text-align:right;font-size:11px;color:var(--text2);padding:4px 10px 4px 4px;font-weight:500;width:56px">Floor</th>';
+  hmHtml += '<th style="text-align:right;font-size:13px;color:var(--text2);padding:6px 12px 6px 4px;font-weight:500;width:64px">Floor</th>';
   PANEL_KEYS.forEach(k => {
-    hmHtml += `<th style="text-align:center;font-size:11px;color:var(--text2);padding:4px 3px;font-weight:500;min-width:52px">${k}</th>`;
+    hmHtml += `<th style="text-align:center;font-size:13px;color:var(--text2);padding:6px 4px;font-weight:500;min-width:60px">${k}</th>`;
   });
   hmHtml += '</tr></thead><tbody>';
 
@@ -528,7 +536,7 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
   floorNumsDesc.forEach(f => {
     const floorIdx = f - 1;
     hmHtml += '<tr>';
-    hmHtml += `<td style="text-align:right;font-size:11px;font-weight:500;color:var(--text2);padding:3px 10px 3px 4px;white-space:nowrap">${ordinal(f)}</td>`;
+    hmHtml += `<td style="text-align:right;font-size:13px;font-weight:500;color:var(--text2);padding:4px 12px 4px 4px;white-space:nowrap">${ordinal(f)}</td>`;
     PANEL_KEYS.forEach(k => {
       const hasDate = pourDates[k][floorIdx] && pourDates[k][floorIdx] <= today;
       const days = cycleMatrix[k][floorIdx] != null ? cycleMatrix[k][floorIdx] : null;
@@ -538,8 +546,8 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
       const isMin = days != null && days === globalMin;
       const isMax = days != null && days === globalMax;
       const extraBorder = isMin ? 'border:2px solid #27500A !important;' : isMax ? 'border:2px solid #A32D2D !important;' : '';
-      const badge = isMin ? `<div style="font-size:9px;color:#27500A;font-weight:500;line-height:1;margin-top:1px">▲ fastest</div>` :
-                    isMax ? `<div style="font-size:9px;color:#A32D2D;font-weight:500;line-height:1;margin-top:1px">▼ slowest</div>` : '';
+      const badge = isMin ? `<div style="font-size:9px;color:#27500A;font-weight:500;line-height:1;margin-top:1px">▲ best</div>` :
+                    isMax ? `<div style="font-size:9px;color:#A32D2D;font-weight:500;line-height:1;margin-top:1px">▼ worst</div>` : '';
       hmHtml += `<td style="padding:3px;text-align:center">
         <div title="${days != null ? days+' days' : (isFirstFloor ? 'First pour — no cycle time' : 'No pour yet')}" style="background:${c.bg};border:0.5px solid ${c.border};${isMin?'border:2px solid #3B6D11;':isMax?'border:2px solid #A32D2D;':''}border-radius:4px;padding:4px 2px;font-size:10px;font-weight:500;color:${c.text};line-height:1.3;min-width:44px">${label}${badge}</div>
       </td>`;
@@ -548,10 +556,10 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
   });
 
   hmHtml += '</tbody></table>';
-  hmHtml += '<div style="font-size:11px;color:var(--text3);margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">';
+  hmHtml += '<div style="font-size:13px;color:var(--text3);margin-top:12px;display:flex;gap:24px;flex-wrap:wrap">';
   hmHtml += '<span>Cycle time = days between consecutive floor pours.</span>';
-  hmHtml += `<span style="color:#27500A;font-weight:500">▲ fastest = ${globalMin}d</span>`;
-  hmHtml += `<span style="color:#A32D2D;font-weight:500">▼ slowest = ${globalMax}d</span>`;
+  hmHtml += `<span style="color:#27500A;font-weight:500">▲ best = ${globalMin}d (fastest)</span>`;
+  hmHtml += `<span style="color:#A32D2D;font-weight:500">▼ worst = ${globalMax}d (slowest)</span>`;
   hmHtml += '</div>';
   document.getElementById('heatmap-container').innerHTML = hmHtml;
 
