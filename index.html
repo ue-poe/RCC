@@ -488,7 +488,7 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     cycleMatrix[k] = {};
     for (let j = 1; j < dates.length; j++) {
       const floorIdx = dates[j].i;
-      const diff = Math.round((dates[j].d - dates[j-1].d) / (1000*60*60*24)) + 1;
+      const diff = Math.round((dates[j].d - dates[j-1].d) / (1000*60*60*24));
       cycleMatrix[k][floorIdx] = diff;
     }
   });
@@ -504,33 +504,55 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
   const maxFloors = Math.max(...PANEL_KEYS.map(k => pourDates[k].filter(d => d && d <= today).length));
   const floorNums = Array.from({length: maxFloors}, (_,i) => i+1);
 
-  const heatmapShortLabels = {'A-P1':'A-P1','A-P2':'A-P2','B-P1':'B-P1','B-P2':'B-P2','C-P1':'C-P1','C-P2':'C-P2'};
+  // Find global min and max cycle days (excluding nulls and first-floor entries)
+  let globalMin = Infinity, globalMax = -Infinity;
+  PANEL_KEYS.forEach(k => {
+    Object.values(cycleMatrix[k]).forEach(v => {
+      if (v != null) { if (v < globalMin) globalMin = v; if (v > globalMax) globalMax = v; }
+    });
+  });
 
-  let hmHtml = '<table style="border-collapse:collapse;width:100%;min-width:420px;">';
-  hmHtml += '<thead><tr><th style="text-align:left;font-size:11px;color:var(--text2);padding:4px 8px;font-weight:500;width:60px">Pour</th>';
-  floorNums.forEach(f => {
-    hmHtml += `<th style="text-align:center;font-size:10px;color:var(--text3);padding:4px 3px;font-weight:400;min-width:36px">${ordinal(f)}</th>`;
+  // Rows = floors (highest at top, lowest at bottom), Columns = pours
+  const floorNumsDesc = [...floorNums].reverse();
+
+  let hmHtml = '<table style="border-collapse:collapse;width:100%;">';
+  // Header row — pour names as columns
+  hmHtml += '<thead><tr>';
+  hmHtml += '<th style="text-align:right;font-size:11px;color:var(--text2);padding:4px 10px 4px 4px;font-weight:500;width:56px">Floor</th>';
+  PANEL_KEYS.forEach(k => {
+    hmHtml += `<th style="text-align:center;font-size:11px;color:var(--text2);padding:4px 3px;font-weight:500;min-width:52px">${k}</th>`;
   });
   hmHtml += '</tr></thead><tbody>';
 
-  PANEL_KEYS.forEach(k => {
-    hmHtml += `<tr><td style="font-size:11px;font-weight:500;color:var(--text2);padding:3px 8px;white-space:nowrap">${heatmapShortLabels[k]}</td>`;
-    floorNums.forEach(f => {
-      const floorIdx = f - 1;
+  // Rows = floors from highest to lowest (so lowest floor appears at bottom)
+  floorNumsDesc.forEach(f => {
+    const floorIdx = f - 1;
+    hmHtml += '<tr>';
+    hmHtml += `<td style="text-align:right;font-size:11px;font-weight:500;color:var(--text2);padding:3px 10px 3px 4px;white-space:nowrap">${ordinal(f)}</td>`;
+    PANEL_KEYS.forEach(k => {
       const hasDate = pourDates[k][floorIdx] && pourDates[k][floorIdx] <= today;
       const days = cycleMatrix[k][floorIdx] != null ? cycleMatrix[k][floorIdx] : null;
       const isFirstFloor = hasDate && days == null;
-      const c = isFirstFloor ? { bg:'#f0f0ec', text:'#aaa', border:'#ddd' } : cycleColor(days);
-      const label = isFirstFloor ? '1st' : (days != null ? days+'d' : '');
+      const c = isFirstFloor ? { bg:'#f0f0ec', text:'#bbb', border:'#e0e0da' } : cycleColor(days);
+      const label = isFirstFloor ? '—' : (days != null ? days+'d' : '');
+      const isMin = days != null && days === globalMin;
+      const isMax = days != null && days === globalMax;
+      const extraBorder = isMin ? 'border:2px solid #27500A !important;' : isMax ? 'border:2px solid #A32D2D !important;' : '';
+      const badge = isMin ? `<div style="font-size:9px;color:#27500A;font-weight:500;line-height:1;margin-top:1px">▲ best</div>` :
+                    isMax ? `<div style="font-size:9px;color:#A32D2D;font-weight:500;line-height:1;margin-top:1px">▼ worst</div>` : '';
       hmHtml += `<td style="padding:3px;text-align:center">
-        <div title="${days != null ? days+' days' : (isFirstFloor ? 'First pour — no cycle time' : 'No pour')}" style="background:${c.bg};border:0.5px solid ${c.border};border-radius:4px;padding:5px 2px;font-size:10px;font-weight:500;color:${c.text};min-width:32px;line-height:1.3">${label}</div>
+        <div title="${days != null ? days+' days' : (isFirstFloor ? 'First pour — no cycle time' : 'No pour yet')}" style="background:${c.bg};border:0.5px solid ${c.border};${isMin?'border:2px solid #3B6D11;':isMax?'border:2px solid #A32D2D;':''}border-radius:4px;padding:4px 2px;font-size:10px;font-weight:500;color:${c.text};line-height:1.3;min-width:44px">${label}${badge}</div>
       </td>`;
     });
     hmHtml += '</tr>';
   });
 
   hmHtml += '</tbody></table>';
-  hmHtml += '<div style="font-size:11px;color:var(--text3);margin-top:10px">Cycle time = days from previous floor pour to this floor pour + 1. First floor has no cycle time.</div>';
+  hmHtml += '<div style="font-size:11px;color:var(--text3);margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">';
+  hmHtml += '<span>Cycle time = days between consecutive floor pours.</span>';
+  hmHtml += `<span style="color:#27500A;font-weight:500">▲ best = ${globalMin}d (fastest)</span>`;
+  hmHtml += `<span style="color:#A32D2D;font-weight:500">▼ worst = ${globalMax}d (slowest)</span>`;
+  hmHtml += '</div>';
   document.getElementById('heatmap-container').innerHTML = hmHtml;
 
   new Chart(document.getElementById('cConc'), {
