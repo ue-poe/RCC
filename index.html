@@ -463,7 +463,7 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
         <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
         <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
       </div>
-      <div style="position:relative;width:100%;height:300px"><canvas id="cPours"></canvas></div>
+      <div style="position:relative;width:100%;height:340px"><canvas id="cPours"></canvas></div>
     </div>
     <div class="chart-card" style="margin-bottom:0">
       <div class="chart-title">Monthly concrete consumption (m³) — by block</div>
@@ -472,7 +472,7 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
         <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
         <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
       </div>
-      <div style="position:relative;width:100%;height:300px"><canvas id="cConc"></canvas></div>
+      <div style="position:relative;width:100%;height:340px"><canvas id="cConc"></canvas></div>
     </div>
   </div>
   `;
@@ -497,15 +497,22 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
       afterDraw(chart) {
         const ctx = chart.ctx;
         const xAxis = chart.scales.x;
+        const canvasHeight = chart.canvas.offsetHeight || chart.height;
+        const fontSize = canvasHeight < 300 ? 10 : 12;
         ctx.save();
-        ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.font = `500 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
         ctx.fillStyle = '#5f5e5a';
         ctx.textAlign = 'center';
-        xAxis.ticks.forEach((tick, i) => {
-          const x = xAxis.getPixelForTick(i);
-          const y = chart.chartArea.bottom + 38;
-          ctx.fillText(totals[i] + suffix, x, y);
-        });
+        // Position total just below where x-axis labels end
+        const xAxisBottom = xAxis.bottom;
+        const y = xAxisBottom + fontSize + 2;
+        // Only draw if there's room (avoid drawing outside canvas)
+        if (y < chart.height - 2) {
+          xAxis.ticks.forEach((tick, i) => {
+            const x = xAxis.getPixelForTick(i);
+            ctx.fillText(totals[i] + suffix, x, y);
+          });
+        }
         ctx.restore();
       }
     };
@@ -523,9 +530,9 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     },
     options: {
       ...baseOpts,
-      layout: { padding: { bottom: 18 } },
+      layout: { padding: { bottom: 28 } },
       scales: {
-        x: { ...xOpts, ticks: { ...xOpts.ticks, padding: 4 } },
+        x: { ...xOpts, ticks: { ...xOpts.ticks, padding: 8, maxRotation: 0, minRotation: 0 } },
         y: { ...yOpts, ticks: { ...yOpts.ticks, stepSize:1, callback: v => v+' nos' } }
       }
     },
@@ -632,9 +639,9 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     },
     options: {
       ...baseOpts,
-      layout: { padding: { bottom: 18 } },
+      layout: { padding: { bottom: 28 } },
       scales: {
-        x: { ...xOpts, ticks: { ...xOpts.ticks, padding: 4 } },
+        x: { ...xOpts, ticks: { ...xOpts.ticks, padding: 8, maxRotation: 0, minRotation: 0 } },
         y: { ...yOpts, ticks: { ...yOpts.ticks, callback: v => v+'m³' } }
       }
     },
