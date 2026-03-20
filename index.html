@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poetry of Earth — RCC Pour Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f2;
+    --bg3: #efefeb;
+    --text: #1a1a18;
+    --text2: #5f5e5a;
+    --text3: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.2);
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --blue-bg: #E6F1FB;  --blue-text: #0C447C;
+    --radius-md: 8px; --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); font-size: 14px; }
+
+  #loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 16px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: #639922; border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-size: 13px; color: var(--text2); }
+
+  #error-msg { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 12px; padding: 24px; text-align: center; }
+  #error-msg h2 { font-size: 16px; font-weight: 500; color: var(--text); }
+  #error-msg p { font-size: 13px; color: var(--text2); max-width: 420px; line-height: 1.6; }
+
+  #dashboard { display: none; max-width: 1100px; margin: 0 auto; padding: 24px 20px 40px; }
+
+  .hdr { margin-bottom: 20px; border-bottom: 0.5px solid var(--border); padding-bottom: 14px; }
+  .hdr-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .hdr h1 { font-size: 20px; font-weight: 500; color: var(--text); }
+  .hdr-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+  .hdr-tag { font-size: 11px; padding: 3px 12px; border-radius: 20px; background: var(--bg2); color: var(--text2); white-space: nowrap; border: 0.5px solid var(--border); }
+  .updated { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
+  .kpi { background: var(--bg2); border-radius: var(--radius-md); padding: 14px 16px; }
+  .kpi-lbl { font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+  .kpi-val { font-size: 22px; font-weight: 500; color: var(--text); }
+  .kpi-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  .sec-lbl { font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 10px; }
+
+  .block-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
+  .bcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+  .bcard-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .bcard-title { font-size: 13px; font-weight: 500; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+  .badge-green { background: var(--green-bg); color: var(--green-text); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .prog-bg { background: var(--border); border-radius: 4px; height: 6px; margin-bottom: 5px; }
+  .prog-fill { height: 6px; border-radius: 4px; }
+  .prog-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); }
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 10px 0; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px; }
+  .stat-key { color: var(--text2); }
+  .stat-val { font-weight: 500; color: var(--text); }
+
+  .latest-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
+  .lcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 13px 15px; }
+  .lcard-panel { font-size: 11px; color: var(--text3); margin-bottom: 4px; font-weight: 500; }
+  .lcard-floor { font-size: 15px; font-weight: 500; }
+  .lcard-date { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .lcard-qty { font-size: 13px; font-weight: 500; margin-top: 8px; }
+  .lcard-qty span { font-size: 11px; font-weight: 400; color: var(--text2); }
+  .lcard-dur { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  .recent-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
+  .rcard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; }
+  .rcard-rank { font-size: 11px; color: var(--text3); margin-bottom: 3px; }
+  .rcard-floor { font-size: 14px; font-weight: 500; }
+  .rcard-block { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .rcard-date { font-size: 12px; }
+  .rcard-qty { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .pill-new { display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 10px; font-weight: 500; background: var(--blue-bg); color: var(--blue-text); margin-left: 5px; vertical-align: middle; }
+
+  .chart-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 16px; }
+  .chart-title { font-size: 13px; font-weight: 500; margin-bottom: 12px; }
+  .leg-row { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+  .leg { display: flex; align-items: center; gap: 5px; }
+  .leg-sq { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  @media (max-width: 700px) {
+    .kpi-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .block-grid, .latest-grid, .recent-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Loading live data from Google Sheets…</p>
+</div>
+
+<div id="error-msg">
+  <h2>Could not load data</h2>
+  <p>The Google Sheet could not be fetched. Please ensure it is published to the web as CSV and try refreshing the page.</p>
+</div>
+
+<div id="dashboard"></div>
+
+<script>
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfBmEbijIN3-QMVWD7xF2GZ6dq0oQpQiLctWvlCDkxFAoUrTJKwvppJXtpdFVLq6Gt9MDvSf97GzRb/pub?gid=845177619&single=true&output=csv';
+
+const PANEL_KEYS = ['A-P1','A-P2','B-P1','B-P2','C-P1','C-P2'];
+const PANEL_LABELS = {
+  'A-P1':'Block A — Pour-1','A-P2':'Block A — Pour-2',
+  'B-P1':'Block B — Pour-1','B-P2':'Block B — Pour-2',
+  'C-P1':'Block C — Pour-1','C-P2':'Block C — Pour-2'
+};
+const UNIT_LABELS = {
+  'A-P1':'1 & 2 Series','A-P2':'3 & 4 Series',
+  'B-P1':'1 & 2 Series','B-P2':'3 & 4 Series',
+  'C-P1':'1 & 2 Series','C-P2':'3 & 4 Series'
+};
+
+function parseCSV(text) {
+  return text.trim().split('\n').map(row => {
+    const cells = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < row.length; i++) {
+      if (row[i] === '"') { inQ = !inQ; }
+      else if (row[i] === ',' && !inQ) { cells.push(cur.trim()); cur = ''; }
+      else { cur += row[i]; }
+    }
+    cells.push(cur.trim());
+    return cells;
+  });
+}
+
+function fmtDate(d) {
+  if (!d || !(d instanceof Date) || isNaN(d)) return '—';
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' });
+}
+
+function daysBetween(a, b) {
+  if (!a || !b) return null;
+  return Math.round(Math.abs((b - a) / (1000 * 60 * 60 * 24)));
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
+function monthKey(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + '-' + String(d.getFullYear()).slice(2);
+}
+
+function parseSheetDate(str) {
+  if (!str || str.trim() === '') return null;
+  const d = new Date(str.trim());
+  return isNaN(d) ? null : d;
+}
+
+async function loadAndRender() {
+  try {
+    const resp = await fetch(CSV_URL);
+    if (!resp.ok) throw new Error('Fetch failed');
+    const text = await resp.text();
+    const rows = parseCSV(text);
+    processData(rows);
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-msg').style.display = 'flex';
+  }
+}
+
+function processData(rows) {
+  // Find section start rows by scanning for marker text
+  let pourDateStart = -1, qtyStart = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    if (r[1] && r[1].toLowerCase().includes('1st floor') && pourDateStart === -1) pourDateStart = i;
+    if (r[0] === '1' && r[1] && r[1].toLowerCase().includes('1st floor') && i > 5) { qtyStart = i; break; }
+  }
+
+  // Pour dates: columns 2-7 = A-P1, A-P2, B-P1, B-P2, C-P1, C-P2
+  const pourDates = { 'A-P1':[], 'A-P2':[], 'B-P1':[], 'B-P2':[], 'C-P1':[], 'C-P2':[] };
+  const pourQtys  = { 'A-P1':[], 'A-P2':[], 'B-P1':[], 'B-P2':[], 'C-P1':[], 'C-P2':[] };
+  const floorNames = [];
+
+  // Parse pour dates section
+  for (let i = pourDateStart; i < rows.length; i++) {
+    const r = rows[i];
+    const floorCell = r[1] ? r[1].trim() : '';
+    if (!floorCell || !floorCell.toLowerCase().includes('floor')) break;
+    floorNames.push(floorCell);
+    PANEL_KEYS.forEach((k, idx) => {
+      pourDates[k].push(parseSheetDate(r[2 + idx]));
+    });
+  }
+
+  // Parse quantities section - find it after "RCC POUR QTY ACHIEVED" marker
+  let qtySection = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i][0] && rows[i][0].toString().toUpperCase().includes('RCC POUR QTY')) { qtySection = i + 2; break; }
+  }
+  if (qtySection > 0) {
+    for (let i = qtySection; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r[1] || !r[1].toLowerCase().includes('floor')) break;
+      PANEL_KEYS.forEach((k, idx) => {
+        const v = parseFloat(r[2 + idx]);
+        pourQtys[k].push(isNaN(v) ? null : v);
+      });
+    }
+  }
+
+  // --- Compute stats ---
+  const today = new Date();
+
+  // Count completed pours per panel (date exists and <= today)
+  const completedCount = {};
+  const firstDate = {}, lastDate = {}, lastFloor = {}, lastQty = {};
+  PANEL_KEYS.forEach(k => {
+    const dates = pourDates[k].filter(d => d && d <= today);
+    completedCount[k] = dates.length;
+    const sorted = [...dates].sort((a,b) => a-b);
+    firstDate[k] = sorted[0] || null;
+    lastDate[k] = sorted[sorted.length - 1] || null;
+    const lastIdx = pourDates[k].reduce((acc, d, i) => (d && d <= today ? i : acc), -1);
+    lastFloor[k] = lastIdx >= 0 ? (floorNames[lastIdx] || ordinal(lastIdx+1) + ' floor') : '—';
+    lastQty[k] = lastIdx >= 0 && pourQtys[k][lastIdx] != null ? pourQtys[k][lastIdx] : null;
+  });
+
+  const totalPours = PANEL_KEYS.reduce((s, k) => s + completedCount[k], 0);
+
+  // Volume per panel
+  const totalVol = {};
+  PANEL_KEYS.forEach(k => {
+    totalVol[k] = pourQtys[k].reduce((s, v) => s + (v || 0), 0);
+  });
+
+  const blockVol = {
+    A: totalVol['A-P1'] + totalVol['A-P2'],
+    B: totalVol['B-P1'] + totalVol['B-P2'],
+    C: totalVol['C-P1'] + totalVol['C-P2']
+  };
+  const grandTotal = blockVol.A + blockVol.B + blockVol.C;
+
+  // Duration per panel
+  const duration = {};
+  PANEL_KEYS.forEach(k => {
+    duration[k] = daysBetween(firstDate[k], lastDate[k]);
+  });
+
+  // Most active block
+  const blockPours = {
+    A: completedCount['A-P1'] + completedCount['A-P2'],
+    B: completedCount['B-P1'] + completedCount['B-P2'],
+    C: completedCount['C-P1'] + completedCount['C-P2']
+  };
+  const mostActive = Object.entries(blockPours).sort((a,b) => b[1]-a[1])[0][0];
+  const mostActiveHighest = Math.max(completedCount['B-P1'], completedCount['B-P2'],
+    completedCount['A-P1'], completedCount['A-P2'], completedCount['C-P1'], completedCount['C-P2']);
+
+  // Latest 3 pours site-wide
+  const allPours = [];
+  PANEL_KEYS.forEach(k => {
+    pourDates[k].forEach((d, i) => {
+      if (d && d <= today) {
+        allPours.push({ date: d, panel: k, floor: floorNames[i] || ordinal(i+1)+' floor', qty: pourQtys[k][i], floorIdx: i });
+      }
+    });
+  });
+  allPours.sort((a, b) => b.date - a.date);
+  const latest3 = allPours.slice(0, 3);
+  const latestPour = latest3[0];
+
+  // Monthly data
+  const MONTHS_ORDER = [];
+  const monthSet = new Set();
+  allPours.forEach(p => { const mk = monthKey(p.date); monthSet.add(mk); });
+  // Build ordered month list
+  const allDates = allPours.map(p=>p.date).sort((a,b)=>a-b);
+  if (allDates.length) {
+    let cur = new Date(allDates[0].getFullYear(), allDates[0].getMonth(), 1);
+    const end = new Date(today.getFullYear(), today.getMonth(), 1);
+    while (cur <= end) {
+      MONTHS_ORDER.push(monthKey(cur));
+      cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+    }
+  }
+
+  const monthlyPours = { A: {}, B: {}, C: {} };
+  const monthlyVol   = { A: {}, B: {}, C: {} };
+  MONTHS_ORDER.forEach(m => { ['A','B','C'].forEach(b => { monthlyPours[b][m] = 0; monthlyVol[b][m] = 0; }); });
+  allPours.forEach(p => {
+    const m = monthKey(p.date);
+    const b = p.panel[0];
+    if (monthlyPours[b][m] !== undefined) {
+      monthlyPours[b][m]++;
+      monthlyVol[b][m] += (p.qty || 0);
+    }
+  });
+
+  // Block progress %
+  const totalFloorsPerBlock = { A: floorNames.length, B: floorNames.length, C: floorNames.length };
+  const blockPct = {
+    A: Math.round((blockPours.A / (totalFloorsPerBlock.A * 2)) * 100),
+    B: Math.round((blockPours.B / (totalFloorsPerBlock.B * 2)) * 100),
+    C: Math.round((blockPours.C / (totalFloorsPerBlock.C * 2)) * 100)
+  };
+
+  // --- Render ---
+  document.getElementById('loading').style.display = 'none';
+  const dash = document.getElementById('dashboard');
+  dash.style.display = 'block';
+
+  const rankLabels = ['Most recent', '2nd most recent', '3rd most recent'];
+
+  const floorLabel = f => f ? f.charAt(0).toUpperCase() + f.slice(1) : '—';
+
+  dash.innerHTML = `
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <h1>Poetry of Earth — RCC Pour Dashboard</h1>
+        <div class="hdr-sub">Urban Excellence &nbsp;·&nbsp; Residential Site — Blocks A, B &amp; C</div>
+        <div class="updated">Live data from Google Sheets &nbsp;·&nbsp; Last loaded: ${new Date().toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <span class="hdr-tag">Construction Progress Report</span>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-lbl">Total pours completed</div>
+      <div class="kpi-val" style="color:#27500A">${totalPours}</div>
+      <div class="kpi-sub">across all blocks &amp; pours</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Total concrete poured</div>
+      <div class="kpi-val">${grandTotal.toLocaleString('en-IN', {maximumFractionDigits:1})} m³</div>
+      <div class="kpi-sub">combined all 6 pours</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Most active block</div>
+      <div class="kpi-val">Block ${mostActive}</div>
+      <div class="kpi-sub">${blockPours[mostActive]} pours completed</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Latest pour</div>
+      <div class="kpi-val" style="font-size:16px;padding-top:4px">${latestPour ? PANEL_LABELS[latestPour.panel].replace('Block ','').replace(' — ','-') + ', ' + floorLabel(latestPour.floor) : '—'}</div>
+      <div class="kpi-sub">${latestPour ? fmtDate(latestPour.date) + (latestPour.qty ? ' — ' + latestPour.qty + ' m³' : '') : ''}</div>
+    </div>
+  </div>
+
+  <div class="sec-lbl">Block progress — pours completed &amp; volume (Pour-1 + Pour-2)</div>
+  <div class="block-grid">
+    ${['A','B','C'].map(b => {
+      const p1 = `${b}-P1`, p2 = `${b}-P2`;
+      const pct = blockPct[b];
+      const badgeCls = pct >= 35 ? 'badge-green' : 'badge-blue';
+      return `<div class="bcard">
+        <div class="bcard-hdr"><span class="bcard-title">Block ${b}</span><span class="badge ${badgeCls}">${blockPours[b]} pours done</span></div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${pct>=35?'#639922':'#185FA5'}"></div></div>
+        <div class="prog-meta"><span>Pour-1: ${completedCount[p1]} &nbsp;·&nbsp; Pour-2: ${completedCount[p2]}</span><span>${pct}% of pours</span></div>
+        <hr class="divider">
+        <div class="stat-row"><span class="stat-key">Volume poured</span><span class="stat-val">${blockVol[b].toLocaleString('en-IN',{maximumFractionDigits:1})} m³</span></div>
+        <div class="stat-row"><span class="stat-key">Pour-1</span><span class="stat-val">${totalVol[p1].toLocaleString('en-IN',{maximumFractionDigits:1})} m³ · ${completedCount[p1]} floors</span></div>
+        <div class="stat-row"><span class="stat-key">Pour-2</span><span class="stat-val">${totalVol[p2].toLocaleString('en-IN',{maximumFractionDigits:1})} m³ · ${completedCount[p2]} floors</span></div>
+        <div class="stat-row"><span class="stat-key">Duration (Pour-1)</span><span class="stat-val">${duration[p1] != null ? duration[p1]+' days' : '—'}</span></div>
+        <div class="stat-row"><span class="stat-key">Duration (Pour-2)</span><span class="stat-val">${duration[p2] != null ? duration[p2]+' days' : '—'}</span></div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <div class="sec-lbl">Latest pour completed — each pour</div>
+  <div class="latest-grid">
+    ${PANEL_KEYS.map(k => {
+      const days = duration[k];
+      return `<div class="lcard">
+        <div class="lcard-panel">${PANEL_LABELS[k]}</div>
+        <div class="lcard-floor">${floorLabel(lastFloor[k])}</div>
+        <div class="lcard-date">${fmtDate(lastDate[k])}</div>
+        <div class="lcard-qty">${lastQty[k] != null ? lastQty[k]+' m³' : '—'} <span>poured</span></div>
+        <div class="lcard-dur">${days != null && firstDate[k] ? days+' days since first pour ('+fmtDate(firstDate[k])+')' : '—'}</div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <div class="sec-lbl">Latest 3 pours — site wide</div>
+  <div class="recent-grid">
+    ${latest3.map((p, i) => `<div class="rcard">
+      <div class="rcard-rank">${rankLabels[i]}</div>
+      <div class="rcard-floor">${floorLabel(p.floor)}${i===0?'<span class="pill-new">Latest</span>':''}</div>
+      <div class="rcard-block">${PANEL_LABELS[p.panel]} &nbsp;(${UNIT_LABELS[p.panel]})</div>
+      <div class="rcard-date">${fmtDate(p.date)}</div>
+      <div class="rcard-qty">${p.qty != null ? p.qty+' m³' : '—'}</div>
+    </div>`).join('')}
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Monthly pours achieved — count by block</div>
+    <div class="leg-row">
+      <span class="leg"><span class="leg-sq" style="background:#85B7EB"></span>Block A</span>
+      <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
+      <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
+    </div>
+    <div style="position:relative;width:100%;height:220px"><canvas id="cPours"></canvas></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Monthly concrete consumption (m³) — by block</div>
+    <div class="leg-row">
+      <span class="leg"><span class="leg-sq" style="background:#85B7EB"></span>Block A</span>
+      <span class="leg"><span class="leg-sq" style="background:#5DCAA5"></span>Block B</span>
+      <span class="leg"><span class="leg-sq" style="background:#AFA9EC"></span>Block C</span>
+    </div>
+    <div style="position:relative;width:100%;height:220px"><canvas id="cConc"></canvas></div>
+  </div>
+  `;
+
+  // Charts
+  const xOpts = { ticks:{font:{size:11},color:'#888780'}, grid:{display:false} };
+  const yOpts = { ticks:{font:{size:11},color:'#888780'}, grid:{color:'rgba(136,135,128,0.15)'} };
+  const baseOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} };
+
+  new Chart(document.getElementById('cPours'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS_ORDER,
+      datasets: [
+        { label:'Block A', data: MONTHS_ORDER.map(m=>monthlyPours.A[m]||0), backgroundColor:'#85B7EB', borderRadius:3 },
+        { label:'Block B', data: MONTHS_ORDER.map(m=>monthlyPours.B[m]||0), backgroundColor:'#5DCAA5', borderRadius:3 },
+        { label:'Block C', data: MONTHS_ORDER.map(m=>monthlyPours.C[m]||0), backgroundColor:'#AFA9EC', borderRadius:3 }
+      ]
+    },
+    options: { ...baseOpts, scales: { x: xOpts, y: { ...yOpts, ticks:{...yOpts.ticks, stepSize:1, callback:v=>v+' nos'} } } }
+  });
+
+  new Chart(document.getElementById('cConc'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS_ORDER,
+      datasets: [
+        { label:'Block A', data: MONTHS_ORDER.map(m=>Math.round(monthlyVol.A[m]||0)), backgroundColor:'#85B7EB', borderRadius:3 },
+        { label:'Block B', data: MONTHS_ORDER.map(m=>Math.round(monthlyVol.B[m]||0)), backgroundColor:'#5DCAA5', borderRadius:3 },
+        { label:'Block C', data: MONTHS_ORDER.map(m=>Math.round(monthlyVol.C[m]||0)), backgroundColor:'#AFA9EC', borderRadius:3 }
+      ]
+    },
+    options: { ...baseOpts, scales: { x: xOpts, y: { ...yOpts, ticks:{...yOpts.ticks, callback:v=>v+'m³'} } } }
+  });
+}
+
+loadAndRender();
+</script>
+</body>
+</html>
