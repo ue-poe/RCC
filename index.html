@@ -482,6 +482,35 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
   const yOpts = { ticks:{font:{size:13},color:'#888780'}, grid:{color:'rgba(136,135,128,0.15)'} };
   const baseOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} };
 
+  // Monthly totals for labels
+  const pourMonthlyTotals = MONTHS_ORDER.map(m =>
+    (monthlyPours.A[m]||0) + (monthlyPours.B[m]||0) + (monthlyPours.C[m]||0)
+  );
+  const concMonthlyTotals = MONTHS_ORDER.map(m =>
+    Math.round((monthlyVol.A[m]||0) + (monthlyVol.B[m]||0) + (monthlyVol.C[m]||0))
+  );
+
+  // Plugin to draw totals below x-axis tick labels
+  function makeTotalsPlugin(totals, suffix) {
+    return {
+      id: 'totalsBelow',
+      afterDraw(chart) {
+        const ctx = chart.ctx;
+        const xAxis = chart.scales.x;
+        ctx.save();
+        ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.fillStyle = '#5f5e5a';
+        ctx.textAlign = 'center';
+        xAxis.ticks.forEach((tick, i) => {
+          const x = xAxis.getPixelForTick(i);
+          const y = chart.chartArea.bottom + 38;
+          ctx.fillText(totals[i] + suffix, x, y);
+        });
+        ctx.restore();
+      }
+    };
+  }
+
   new Chart(document.getElementById('cPours'), {
     type: 'bar',
     data: {
@@ -492,7 +521,15 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
         { label:'Block C', data: MONTHS_ORDER.map(m=>monthlyPours.C[m]||0), backgroundColor:'#AFA9EC', borderRadius:3 }
       ]
     },
-    options: { ...baseOpts, scales: { x: xOpts, y: { ...yOpts, ticks:{...yOpts.ticks, stepSize:1, callback:v=>v+' nos'} } } }
+    options: {
+      ...baseOpts,
+      layout: { padding: { bottom: 18 } },
+      scales: {
+        x: { ...xOpts, ticks: { ...xOpts.ticks, padding: 4 } },
+        y: { ...yOpts, ticks: { ...yOpts.ticks, stepSize:1, callback: v => v+' nos' } }
+      }
+    },
+    plugins: [ makeTotalsPlugin(pourMonthlyTotals, ' nos') ]
   });
 
   // Cycle time computation for avg card
@@ -593,7 +630,15 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
         { label:'Block C', data: MONTHS_ORDER.map(m=>Math.round(monthlyVol.C[m]||0)), backgroundColor:'#AFA9EC', borderRadius:3 }
       ]
     },
-    options: { ...baseOpts, scales: { x: xOpts, y: { ...yOpts, ticks:{...yOpts.ticks, callback:v=>v+'m³'} } } }
+    options: {
+      ...baseOpts,
+      layout: { padding: { bottom: 18 } },
+      scales: {
+        x: { ...xOpts, ticks: { ...xOpts.ticks, padding: 4 } },
+        y: { ...yOpts, ticks: { ...yOpts.ticks, callback: v => v+'m³' } }
+      }
+    },
+    plugins: [ makeTotalsPlugin(concMonthlyTotals, ' m³') ]
   });
 }
 
