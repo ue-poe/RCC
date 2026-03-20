@@ -510,7 +510,7 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
         if (y < chart.height - 2) {
           xAxis.ticks.forEach((tick, i) => {
             const x = xAxis.getPixelForTick(i);
-            ctx.fillText(totals[i] + suffix, x, y);
+            ctx.fillText(totals[tick.value] + suffix, x, y);
           });
         }
         ctx.restore();
