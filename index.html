@@ -203,7 +203,7 @@ function processData(rows) {
   // Parse quantities section - find it after "RCC POUR QTY ACHIEVED" marker
   let qtySection = -1;
   for (let i = 0; i < rows.length; i++) {
-    if (rows[i][0] && rows[i][0].toString().toUpperCase().includes('RCC POUR QTY')) { qtySection = i + 2; break; }
+    if (rows[i][0] && rows[i][0].toString().toUpperCase().includes('RCC POUR QTY')) { qtySection = i + 1; break; }
   }
   if (qtySection > 0) {
     for (let i = qtySection; i < rows.length; i++) {
