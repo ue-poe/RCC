@@ -234,7 +234,9 @@ function processData(rows) {
   });
 
   const totalPours = PANEL_KEYS.reduce((s, k) => s + completedCount[k], 0);
-
+  const totalPlanned = 162;
+  const pctAchieved = Math.round((totalPours / totalPlanned) * 100);
+  
   // Volume per panel
   const totalVol = {};
   PANEL_KEYS.forEach(k => {
@@ -333,6 +335,19 @@ function processData(rows) {
     </div>
   </div>
 
+<div style="background:var(--bg2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border:0.5px solid var(--border);">
+    <div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px;">Overall pour progress</div>
+      <div style="font-size:32px;font-weight:500;color:${pctAchieved>=50?'#27500A':'#854F0B'}">${pctAchieved}%</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">${totalPours} of ${totalPlanned} pours completed</div>
+    </div>
+    <div style="flex:1;min-width:200px;max-width:500px;">
+      <div style="background:var(--border);border-radius:6px;height:10px;">
+        <div style="width:${pctAchieved}%;height:10px;border-radius:6px;background:${pctAchieved>=50?'#639922':'#185FA5'};"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:5px;"><span>0</span><span>${totalPlanned} planned</span></div>
+    </div>
+  </div>
   <div class="kpi-row">
     <div class="kpi">
       <div class="kpi-lbl">Total pours completed</div>
