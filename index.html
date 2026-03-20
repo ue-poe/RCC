@@ -546,8 +546,8 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
       const isMin = days != null && days === globalMin;
       const isMax = days != null && days === globalMax;
       const extraBorder = isMin ? 'border:2px solid #27500A !important;' : isMax ? 'border:2px solid #A32D2D !important;' : '';
-      const badge = isMin ? `<div style="font-size:9px;color:#27500A;font-weight:500;line-height:1;margin-top:1px">▲ best</div>` :
-                    isMax ? `<div style="font-size:9px;color:#A32D2D;font-weight:500;line-height:1;margin-top:1px">▼ worst</div>` : '';
+      const badge = isMin ? `<div style="font-size:9px;color:#27500A;font-weight:500;line-height:1;margin-top:1px">▲ Fastest</div>` :
+                    isMax ? `<div style="font-size:9px;color:#A32D2D;font-weight:500;line-height:1;margin-top:1px">▼ Slowest</div>` : '';
       hmHtml += `<td style="padding:3px;text-align:center">
         <div title="${days != null ? days+' days' : (isFirstFloor ? 'First pour — no cycle time' : 'No pour yet')}" style="background:${c.bg};border:0.5px solid ${c.border};${isMin?'border:2px solid #3B6D11;':isMax?'border:2px solid #A32D2D;':''}border-radius:4px;padding:4px 2px;font-size:10px;font-weight:500;color:${c.text};line-height:1.3;min-width:44px">${label}${badge}</div>
       </td>`;
@@ -558,8 +558,8 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
   hmHtml += '</tbody></table>';
   hmHtml += '<div style="font-size:13px;color:var(--text3);margin-top:12px;display:flex;gap:24px;flex-wrap:wrap">';
   hmHtml += '<span>Cycle time = days between consecutive floor pours.</span>';
-  hmHtml += `<span style="color:#27500A;font-weight:500">▲ best = ${globalMin}d (fastest)</span>`;
-  hmHtml += `<span style="color:#A32D2D;font-weight:500">▼ worst = ${globalMax}d (slowest)</span>`;
+  hmHtml += `<span style="color:#27500A;font-weight:500">▲ Fastest = ${globalMin}d</span>`;
+  hmHtml += `<span style="color:#A32D2D;font-weight:500">▼ Slowest = ${globalMax}d</span>`;
   hmHtml += '</div>';
   document.getElementById('heatmap-container').innerHTML = hmHtml;
 
