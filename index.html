@@ -434,24 +434,11 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     </div>`).join('')}
   </div>
 
-  <div class="sec-lbl">Pour cycle time heatmap — days between consecutive floor pours</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;align-items:start;">
-    <div class="chart-card" style="overflow-x:auto;margin-bottom:0">
-      <div style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:10px;">Cycle time per floor (days)</div>
-      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin-bottom:12px;flex-wrap:wrap;">
-        <span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:#EAF3DE"></span>Fast (&lt;14d)
-        <span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:#97C459;margin-left:6px"></span>14–18d
-        <span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:#EF9F27;margin-left:6px"></span>19–25d
-        <span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:#E24B4A;margin-left:6px"></span>Slow (&gt;25d)
-        <span style="display:inline-block;width:11px;height:11px;border-radius:2px;background:#f0f0ec;border:0.5px solid #ccc;margin-left:6px"></span>No data
-      </div>
-      <div id="heatmap-container"></div>
-    </div>
-    <div class="chart-card" style="margin-bottom:0">
-      <div style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px;">Overall average cycle time</div>
-      <div style="font-size:13px;color:var(--text3);margin-bottom:20px;">Sum of cycle times ÷ (pours − 1) per pour location</div>
-      <div id="avg-cycle-container"></div>
-    </div>
+  <div class="sec-lbl">Overall average cycle time — per pour location</div>
+  <div class="chart-card" style="margin-bottom:20px;">
+    <div style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px;">Overall average cycle time</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:20px;">Sum of cycle times ÷ (pours − 1) per pour location</div>
+    <div id="avg-cycle-container"></div>
   </div>
 
   <div class="charts-row">
@@ -494,15 +481,14 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     options: { ...baseOpts, scales: { x: xOpts, y: { ...yOpts, ticks:{...yOpts.ticks, stepSize:1, callback:v=>v+' nos'} } } }
   });
 
-  // Heatmap — cycle times per panel per floor
+  // Cycle time computation for avg card
   const cycleMatrix = {};
   PANEL_KEYS.forEach(k => {
     const dates = pourDates[k].map((d,i) => ({d,i})).filter(x => x.d && x.d <= today).sort((a,b) => a.d - b.d);
     cycleMatrix[k] = {};
     for (let j = 1; j < dates.length; j++) {
       const floorIdx = dates[j].i;
-      const diff = Math.round((dates[j].d - dates[j-1].d) / (1000*60*60*24));
-      cycleMatrix[k][floorIdx] = diff;
+      cycleMatrix[k][floorIdx] = Math.round((dates[j].d - dates[j-1].d) / (1000*60*60*24));
     }
   });
 
@@ -514,62 +500,8 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     return { bg:'#F09595', text:'#501313', border:'#E24B4A' };
   }
 
-  const maxFloors = Math.max(...PANEL_KEYS.map(k => pourDates[k].filter(d => d && d <= today).length));
-  const floorNums = Array.from({length: maxFloors}, (_,i) => i+1);
-
-  // Find global min and max cycle days (excluding nulls and first-floor entries)
-  let globalMin = Infinity, globalMax = -Infinity;
-  PANEL_KEYS.forEach(k => {
-    Object.values(cycleMatrix[k]).forEach(v => {
-      if (v != null) { if (v < globalMin) globalMin = v; if (v > globalMax) globalMax = v; }
-    });
-  });
-
-  // Rows = floors (highest at top, lowest at bottom), Columns = pours
-  const floorNumsDesc = [...floorNums].reverse();
-
-  let hmHtml = '<table style="border-collapse:collapse;width:100%;">';
-  // Header row — pour names as columns
-  hmHtml += '<thead><tr>';
-  hmHtml += '<th style="text-align:right;font-size:13px;color:var(--text2);padding:6px 12px 6px 4px;font-weight:500;width:64px">Floor</th>';
-  PANEL_KEYS.forEach(k => {
-    hmHtml += `<th style="text-align:center;font-size:13px;color:var(--text2);padding:6px 4px;font-weight:500;min-width:60px">${k}</th>`;
-  });
-  hmHtml += '</tr></thead><tbody>';
-
-  // Rows = floors from highest to lowest (so lowest floor appears at bottom)
-  floorNumsDesc.forEach(f => {
-    const floorIdx = f - 1;
-    hmHtml += '<tr>';
-    hmHtml += `<td style="text-align:right;font-size:13px;font-weight:500;color:var(--text2);padding:4px 12px 4px 4px;white-space:nowrap">${ordinal(f)}</td>`;
-    PANEL_KEYS.forEach(k => {
-      const hasDate = pourDates[k][floorIdx] && pourDates[k][floorIdx] <= today;
-      const days = cycleMatrix[k][floorIdx] != null ? cycleMatrix[k][floorIdx] : null;
-      const isFirstFloor = hasDate && days == null;
-      const c = isFirstFloor ? { bg:'#f0f0ec', text:'#bbb', border:'#e0e0da' } : cycleColor(days);
-      const label = isFirstFloor ? '—' : (days != null ? days+'d' : '');
-      const isMin = days != null && days === globalMin;
-      const isMax = days != null && days === globalMax;
-      const extraBorder = isMin ? 'border:2px solid #27500A !important;' : isMax ? 'border:2px solid #A32D2D !important;' : '';
-      const badge = isMin ? `<div style="font-size:9px;color:#27500A;font-weight:500;line-height:1;margin-top:1px">▲ Fastest</div>` :
-                    isMax ? `<div style="font-size:9px;color:#A32D2D;font-weight:500;line-height:1;margin-top:1px">▼ Slowest</div>` : '';
-      hmHtml += `<td style="padding:3px;text-align:center">
-        <div title="${days != null ? days+' days' : (isFirstFloor ? 'First pour — no cycle time' : 'No pour yet')}" style="background:${c.bg};border:0.5px solid ${c.border};${isMin?'border:2px solid #3B6D11;':isMax?'border:2px solid #A32D2D;':''}border-radius:4px;padding:4px 2px;font-size:10px;font-weight:500;color:${c.text};line-height:1.3;min-width:44px">${label}${badge}</div>
-      </td>`;
-    });
-    hmHtml += '</tr>';
-  });
-
-  hmHtml += '</tbody></table>';
-  hmHtml += '<div style="font-size:12px;color:var(--text3);margin-top:10px;display:flex;gap:20px;flex-wrap:wrap">';
-  hmHtml += '<span>Cycle time = days between consecutive floor pours.</span>';
-  hmHtml += `<span style="color:#27500A;font-weight:500">▲ Fastest = ${globalMin}d</span>`;
-  hmHtml += `<span style="color:#A32D2D;font-weight:500">▼ Slowest = ${globalMax}d</span>`;
-  hmHtml += '</div>';
-  document.getElementById('heatmap-container').innerHTML = hmHtml;
-
-  // Overall Average Cycle Time — separate card, side by side with heatmap
-  let avgHtml = '';
+  // Overall Average Cycle Time card
+  let avgHtml = '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;">';
   PANEL_KEYS.forEach(k => {
     const completedPours = pourDates[k].filter(d => d && d <= today).length;
     const cycleVals = Object.values(cycleMatrix[k]).filter(v => v != null);
@@ -577,16 +509,13 @@ const maxCycle = cycleTimes.length ? cycleTimes.reduce((a,b) => a.days >= b.days
     const divisor = completedPours - 1;
     const avg = divisor > 0 ? Math.round(sumCycle / divisor) : null;
     const c = cycleColor(avg);
-    avgHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border);">
-      <div>
-        <div style="font-size:14px;font-weight:500;color:var(--text)">${PANEL_LABELS[k]}</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;">${completedPours} pours · ${divisor > 0 ? sumCycle+'d ÷ '+divisor : '—'}</div>
-      </div>
-      <div style="background:${c.bg};border:0.5px solid ${c.border};border-radius:8px;padding:8px 18px;font-size:20px;font-weight:500;color:${c.text};min-width:76px;text-align:center">
-        ${avg != null ? avg+'d' : '—'}
-      </div>
+    avgHtml += `<div style="background:var(--bg2);border-radius:var(--radius-md);padding:16px 18px;">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">${PANEL_LABELS[k]}</div>
+      <div style="font-size:26px;font-weight:500;color:${c.text};background:${c.bg};border:0.5px solid ${c.border};border-radius:8px;padding:10px 14px;display:inline-block;min-width:80px;text-align:center">${avg != null ? avg+'d' : '—'}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:8px;">${divisor > 0 ? sumCycle+'d ÷ '+divisor+' intervals' : 'Insufficient data'}</div>
     </div>`;
   });
+  avgHtml += '</div>';
   document.getElementById('avg-cycle-container').innerHTML = avgHtml;
 
   new Chart(document.getElementById('cConc'), {
